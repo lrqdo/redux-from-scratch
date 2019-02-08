@@ -2,11 +2,24 @@ import React, { Component, Fragment } from "react";
 import "./App.css";
 
 class App extends Component {
+  state = {
+    selectedOption: { id: 0, name: "En Ruche", price: 0 }
+  };
+
+  selectOption = pickup => () => {
+    this.setState({
+      selectedOption: pickup
+    });
+  };
+
   render() {
     return (
       <Fragment>
-        <MainNav />
-        <SalePage />
+        <MainNav
+          selectedOption={this.state.selectedOption}
+          selectOption={this.selectOption}
+        />
+        <SalePage selectedOption={this.state.selectedOption} />
       </Fragment>
     );
   }
@@ -14,20 +27,13 @@ class App extends Component {
 
 class MainNav extends Component {
   state = {
-    panelIsOpen: false,
-    selectedOption: 0
+    panelIsOpen: false
   };
 
   togglePanel = () => {
     this.setState(prevState => ({
       panelIsOpen: !prevState.panelIsOpen
     }));
-  };
-
-  selectOption = id => () => {
-    this.setState({
-      selectedOption: id
-    });
   };
 
   render() {
@@ -39,8 +45,8 @@ class MainNav extends Component {
         {this.state.panelIsOpen && (
           <Panel
             close={this.togglePanel}
-            selectedOption={this.state.selectedOption}
-            selectOption={this.selectOption}
+            selectedOption={this.props.selectedOption}
+            selectOption={this.props.selectOption}
           />
         )}
       </nav>
@@ -67,9 +73,10 @@ class Panel extends Component {
         <h1>Retrait des produits</h1>
         {this.state.pickups.map(pickup => (
           <DeliveryOption
+            key={pickup.id}
             pickup={pickup}
-            isSelected={this.props.selectedOption === pickup.id}
-            onClick={this.props.selectOption(pickup.id)}
+            isSelected={this.props.selectedOption.id === pickup.id}
+            onClick={this.props.selectOption(pickup)}
           />
         ))}
         <button onClick={this.onSubmit}>Sauvegarder</button>
@@ -79,11 +86,7 @@ class Panel extends Component {
 }
 
 const DeliveryOption = ({ pickup, isSelected, onClick }) => (
-  <div
-    key={pickup.id}
-    className={"option" + (isSelected ? " selected" : "")}
-    onClick={onClick}
-  >
+  <div className={"option" + (isSelected ? " selected" : "")} onClick={onClick}>
     {pickup.name + " (" + format(pickup.price) + ")"}
   </div>
 );
@@ -92,7 +95,7 @@ class SalePage extends Component {
   render() {
     return (
       <Fragment>
-        <SaleNav />
+        <SaleNav selectedOption={this.props.selectedOption} />
         <Products />
       </Fragment>
     );
@@ -103,7 +106,7 @@ class SaleNav extends Component {
   render() {
     return (
       <div className="saleNav">
-        <MiniBasket />
+        <MiniBasket selectedOption={this.props.selectedOption} />
       </div>
     );
   }
@@ -117,7 +120,11 @@ class MiniBasket extends Component {
   };
 
   render() {
-    return <div className="miniBasket">{format(this.state.price)}</div>;
+    return (
+      <div className="miniBasket">
+        {format(this.state.price + this.props.selectedOption.price)}
+      </div>
+    );
   }
 }
 
