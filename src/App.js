@@ -14,7 +14,8 @@ class App extends Component {
 
 class MainNav extends Component {
   state = {
-    panelIsOpen: false
+    panelIsOpen: false,
+    selectedOption: 0
   };
 
   togglePanel = () => {
@@ -23,13 +24,25 @@ class MainNav extends Component {
     }));
   };
 
+  selectOption = id => () => {
+    this.setState({
+      selectedOption: id
+    });
+  };
+
   render() {
     return (
       <nav>
         <div onClick={this.togglePanel} className="item">
           Livraison
         </div>
-        {this.state.panelIsOpen && <Panel close={this.togglePanel} />}
+        {this.state.panelIsOpen && (
+          <Panel
+            close={this.togglePanel}
+            selectedOption={this.state.selectedOption}
+            selectOption={this.selectOption}
+          />
+        )}
       </nav>
     );
   }
@@ -37,18 +50,11 @@ class MainNav extends Component {
 
 class Panel extends Component {
   state = {
-    selectedOption: 0,
     pickups: [
       { id: 0, name: "En Ruche", price: 0 },
       { id: 1, name: "Livraison à domicile", price: 900 },
       { id: 2, name: "Lulu dans ma ruche", price: 250 }
     ]
-  };
-
-  selectOption = id => () => {
-    this.setState({
-      selectedOption: id
-    });
   };
 
   onSubmit = () => {
@@ -62,8 +68,8 @@ class Panel extends Component {
         {this.state.pickups.map(pickup => (
           <DeliveryOption
             pickup={pickup}
-            isSelected={this.state.selectedOption === pickup.id}
-            onClick={this.selectOption(pickup.id)}
+            isSelected={this.props.selectedOption === pickup.id}
+            onClick={this.props.selectOption(pickup.id)}
           />
         ))}
         <button onClick={this.onSubmit}>Sauvegarder</button>
