@@ -1,8 +1,8 @@
 import React, { Component, Fragment } from "react";
-import "./App.css";
 
-class App extends Component {
+export class MainNav extends Component {
   state = {
+    panelIsOpen: false,
     selectedOption: { id: 0, name: "En Ruche", price: 0 }
   };
 
@@ -10,24 +10,6 @@ class App extends Component {
     this.setState({
       selectedOption: pickup
     });
-  };
-
-  render() {
-    return (
-      <Fragment>
-        <MainNav
-          selectedOption={this.state.selectedOption}
-          selectOption={this.selectOption}
-        />
-        <SalePage selectedOption={this.state.selectedOption} />
-      </Fragment>
-    );
-  }
-}
-
-class MainNav extends Component {
-  state = {
-    panelIsOpen: false
   };
 
   togglePanel = () => {
@@ -45,8 +27,8 @@ class MainNav extends Component {
         {this.state.panelIsOpen && (
           <Panel
             close={this.togglePanel}
-            selectedOption={this.props.selectedOption}
-            selectOption={this.props.selectOption}
+            selectedOption={this.state.selectedOption}
+            selectOption={this.selectOption}
           />
         )}
       </nav>
@@ -91,11 +73,11 @@ const DeliveryOption = ({ pickup, isSelected, onClick }) => (
   </div>
 );
 
-class SalePage extends Component {
+export class SalePage extends Component {
   render() {
     return (
       <Fragment>
-        <SaleNav selectedOption={this.props.selectedOption} />
+        <SaleNav />
         <Products />
       </Fragment>
     );
@@ -106,7 +88,7 @@ class SaleNav extends Component {
   render() {
     return (
       <div className="saleNav">
-        <MiniBasket selectedOption={this.props.selectedOption} />
+        <MiniBasket />
       </div>
     );
   }
@@ -120,11 +102,7 @@ class MiniBasket extends Component {
   };
 
   render() {
-    return (
-      <div className="miniBasket">
-        {format(this.state.price + this.props.selectedOption.price)}
-      </div>
-    );
+    return <div className="miniBasket">{format(this.state.price)}</div>;
   }
 }
 
@@ -135,5 +113,3 @@ const format = cents =>
       "," +
       ((cents % 100) + "").padEnd(2, "0") +
       " €";
-
-export default App;
