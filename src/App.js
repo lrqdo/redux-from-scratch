@@ -1,5 +1,6 @@
 import React, { Component, Fragment } from "react";
 import "./App.css";
+import { fetchPickups } from "./api";
 
 class App extends Component {
   render() {
@@ -38,12 +39,14 @@ class MainNav extends Component {
 class Panel extends Component {
   state = {
     selectedOption: 0,
-    pickups: [
-      { id: 0, name: "En Ruche", price: 0 },
-      { id: 1, name: "Livraison à domicile", price: 900 },
-      { id: 2, name: "Lulu dans ma ruche", price: 250 }
-    ]
+    pickups: []
   };
+
+  componentDidMount() {
+    fetchPickups().then(pickups => {
+      this.setState({ pickups });
+    });
+  }
 
   selectOption = id => () => {
     this.setState({
