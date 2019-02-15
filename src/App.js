@@ -1,14 +1,15 @@
 import React, { Component, Fragment } from "react";
+import { fetchPickups } from "./api.js";
 
 export class MainNav extends Component {
   state = {
     panelIsOpen: false,
-    selectedOption: { id: 0, name: "En Ruche", price: 0 }
+    selectedOption: 0
   };
 
-  selectOption = pickup => () => {
+  selectOption = id => () => {
     this.setState({
-      selectedOption: pickup
+      selectedOption: id
     });
   };
 
@@ -38,12 +39,14 @@ export class MainNav extends Component {
 
 class Panel extends Component {
   state = {
-    pickups: [
-      { id: 0, name: "En Ruche", price: 0 },
-      { id: 1, name: "Livraison à domicile", price: 900 },
-      { id: 2, name: "Lulu dans ma ruche", price: 250 }
-    ]
+    pickups: []
   };
+
+  componentDidMount() {
+    fetchPickups().then(pickups => {
+      this.setState({ pickups });
+    });
+  }
 
   onSubmit = () => {
     this.props.close();
@@ -57,8 +60,8 @@ class Panel extends Component {
           <DeliveryOption
             key={pickup.id}
             pickup={pickup}
-            isSelected={this.props.selectedOption.id === pickup.id}
-            onClick={this.props.selectOption(pickup)}
+            isSelected={this.props.selectedOption === pickup.id}
+            onClick={this.props.selectOption(pickup.id)}
           />
         ))}
         <button onClick={this.onSubmit}>Sauvegarder</button>
@@ -98,11 +101,26 @@ const Products = () => <div className="products" />;
 
 class MiniBasket extends Component {
   state = {
-    price: 1245
+    price: 1245,
+    pickups: []
   };
 
+  componentDidMount() {
+    fetchPickups().then(pickups => {
+      this.setState({ pickups });
+    });
+  }
+
   render() {
-    return <div className="miniBasket">{format(this.state.price)}</div>;
+    const selectedPickup = this.state.pickups.filter(
+      pickup => pickup.id === this.props.selectedOption
+    )[0];
+
+    return (
+      <div className="miniBasket">
+        {format(this.state.price + (selectedPickup ? selectedPickup.price : 0))}
+      </div>
+    );
   }
 }
 
