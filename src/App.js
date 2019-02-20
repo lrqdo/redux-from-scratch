@@ -3,11 +3,24 @@ import "./App.css";
 import { fetchPickups } from "./api";
 
 class App extends Component {
+  state = {
+    selectedOption: 0
+  };
+
+  selectOption = id => () => {
+    this.setState({
+      selectedOption: id
+    });
+  };
+
   render() {
     return (
       <Fragment>
-        <MainNav />
-        <SalePage />
+        <MainNav
+          selectOption={this.selectOption}
+          selectedOption={this.state.selectedOption}
+        />
+        <SalePage selectedOption={this.state.selectedOption} />
       </Fragment>
     );
   }
@@ -30,7 +43,13 @@ class MainNav extends Component {
         <div onClick={this.togglePanel} className="item">
           Livraison
         </div>
-        {this.state.panelIsOpen && <Panel close={this.togglePanel} />}
+        {this.state.panelIsOpen && (
+          <Panel
+            close={this.togglePanel}
+            selectOption={this.props.selectOption}
+            selectedOption={this.props.selectedOption}
+          />
+        )}
       </nav>
     );
   }
@@ -38,7 +57,6 @@ class MainNav extends Component {
 
 class Panel extends Component {
   state = {
-    selectedOption: 0,
     pickups: []
   };
 
@@ -47,12 +65,6 @@ class Panel extends Component {
       this.setState({ pickups });
     });
   }
-
-  selectOption = id => () => {
-    this.setState({
-      selectedOption: id
-    });
-  };
 
   onSubmit = () => {
     this.props.close();
@@ -65,8 +77,8 @@ class Panel extends Component {
         {this.state.pickups.map(pickup => (
           <DeliveryOption
             pickup={pickup}
-            isSelected={this.state.selectedOption === pickup.id}
-            onClick={this.selectOption(pickup.id)}
+            isSelected={this.props.selectedOption === pickup.id}
+            onClick={this.props.selectOption(pickup.id)}
           />
         ))}
         <button onClick={this.onSubmit}>Sauvegarder</button>
@@ -89,7 +101,7 @@ class SalePage extends Component {
   render() {
     return (
       <Fragment>
-        <SaleNav />
+        <SaleNav selectedOption={this.props.selectedOption} />
         <Products />
       </Fragment>
     );
@@ -100,7 +112,7 @@ class SaleNav extends Component {
   render() {
     return (
       <div className="saleNav">
-        <MiniBasket />
+        <MiniBasket selectedOption={this.props.selectedOption} />
       </div>
     );
   }
@@ -110,11 +122,24 @@ const Products = () => <div className="products" />;
 
 class MiniBasket extends Component {
   state = {
-    price: 1245
+    price: 1245,
+    pickups: []
   };
 
+  componentDidMount() {
+    fetchPickups().then(pickups => {
+      this.setState({ pickups });
+    });
+  }
+
   render() {
-    return <div className="miniBasket">{format(this.state.price)}</div>;
+    const selectedPickup = this.state.pickups.filter(
+      pickup => pickup.id === this.props.selectedOption
+    )[0];
+    const pickupPrice = selectedPickup ? selectedPickup.price : 0;
+    return (
+      <div className="miniBasket">{format(this.state.price + pickupPrice)}</div>
+    );
   }
 }
 
