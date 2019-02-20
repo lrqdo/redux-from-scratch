@@ -2,16 +2,25 @@ import React, { Component, Fragment } from "react";
 import { fetchPickups } from "./api.js";
 
 export class MainNav extends Component {
-  state = {
-    panelIsOpen: false,
-    selectedOption: 0
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      panelIsOpen: false,
+      selectedOption: props.selectedOption
+    };
+  }
 
-  selectOption = id => () => {
-    this.setState({
-      selectedOption: id
-    });
-  };
+  componentDidMount() {
+    this.unsubscribeFromRedux = this.props.subscribeToReduxStateChanges(
+      state => {
+        this.setState({ selectedOption: state.selectedOption });
+      }
+    );
+  }
+
+  componentWillUnmount() {
+    this.unsubscribeFromRedux();
+  }
 
   togglePanel = () => {
     this.setState(prevState => ({
@@ -29,7 +38,7 @@ export class MainNav extends Component {
           <Panel
             close={this.togglePanel}
             selectedOption={this.state.selectedOption}
-            selectOption={this.selectOption}
+            selectOption={this.props.selectOption}
           />
         )}
       </nav>
@@ -77,10 +86,22 @@ const DeliveryOption = ({ pickup, isSelected, onClick }) => (
 );
 
 export class SalePage extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      selectedOption: props.selectedOption
+    };
+  }
+
+  componentDidMount() {
+    this.props.subscribeToReduxStateChanges(state => {
+      this.setState({ selectedOption: state.selectedOption });
+    });
+  }
   render() {
     return (
       <Fragment>
-        <SaleNav />
+        <SaleNav selectedOption={this.state.selectedOption} />
         <Products />
       </Fragment>
     );
@@ -91,7 +112,7 @@ class SaleNav extends Component {
   render() {
     return (
       <div className="saleNav">
-        <MiniBasket />
+        <MiniBasket selectedOption={this.props.selectedOption} />
       </div>
     );
   }
